@@ -1,28 +1,30 @@
 package net.ankstek.id2212_project_client;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.webkit.WebView;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LobbyActivity extends AppCompatActivity {
 
     private ListView gameListView;
-    final GameListEntryAdapter gameListEntryAdapter = new GameListEntryAdapter(this, R.layout.game_list_entry);
+    private GameListEntryAdapter gameListEntryAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+        gameListEntryAdapter = new GameListEntryAdapter(this, R.layout.game_list_entry);
 
         // Setup the list view
         gameListView = (ListView) findViewById(R.id.listView);
         gameListView.setAdapter(gameListEntryAdapter);
+
 
         // Populate the list, through the adapter
         for (final GameListEntry entry : getGameEntries()) {
@@ -30,14 +32,20 @@ public class LobbyActivity extends AppCompatActivity {
         }
 
 
+
     }
 
 
     private List<GameListEntry> getGameEntries() {
 
-    //TODO: fetch game list from server
+        ArrayList<GameListEntry> gle = new ArrayList<GameListEntry>();
 
-    return null;
+        gle.add(new GameListEntry("ettan", "tvåan", 1337, "Bisi"));
+        gle.add(new GameListEntry("trean", "fyran", 8008, "Free"));
+
+        //TODO: fetch game list from server
+
+    return gle;
     }
 
 

@@ -31,7 +31,7 @@ public final class GameListEntryAdapter extends ArrayAdapter<GameListEntry> {
         // Setting the title view is straightforward
         viewHolder.player1View.setText(entry.getPlayer1());
         viewHolder.player2View.setText(entry.getPlayer2());
-        viewHolder.gameNumberView.setText(entry.getGameNumber());
+        viewHolder.gameNumberView.setText("" + entry.getGameNumber());
         viewHolder.stateView.setText(entry.getStatus());
 
         return view;

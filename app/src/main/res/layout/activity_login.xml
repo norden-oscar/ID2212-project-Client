@@ -45,14 +45,16 @@
             <Button android:id="@+id/btnSignIn" style="?android:textAppearanceSmall"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="16dp" android:text="Sign in"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:onClick="onClickLoginButton" />
 
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Register"
                 android:id="@+id/btnRegister"
-                android:layout_gravity="right" />
+                android:layout_gravity="right"
+                android:onClick="onClickRegisterButton" />
 
         </LinearLayout>
     </ScrollView>
@@ -62,7 +64,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="[hidden]"
-        android:id="@+id/textView2"
+        android:id="@+id/textMsg"
         android:layout_gravity="center_horizontal" />
 
 </LinearLayout>

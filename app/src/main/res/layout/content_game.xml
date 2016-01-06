@@ -168,4 +168,12 @@
         android:layout_alignStart="@+id/gridLayout"
         android:layout_above="@+id/gridLayout" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Forfeit"
+        android:id="@+id/btnForfeit"
+        android:layout_alignTop="@+id/textEnemyName"
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>

@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,7 +22,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btnStartOnClick(View v){
+        EditText ip = (EditText) findViewById(R.id.textIP);
+        String ipaddr = ip.getText().toString();
         Intent loginIntent = new Intent(this, LoginActivity.class);
+        loginIntent.putExtra("IP_ADRESS",ipaddr);
         startActivity(loginIntent);
     }
 

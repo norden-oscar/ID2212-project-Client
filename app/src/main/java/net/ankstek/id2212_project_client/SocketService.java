@@ -34,6 +34,18 @@ public class SocketService extends Service {
         new ConnectSocketTask().execute(hostname, port);
     }
 
+    public String getMessage(){
+        String line = null;
+        while (line == null) {
+            try {
+                line = in.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return line;
+    }
+
     public String sendMessage(String message) {
 
         out.println(message);

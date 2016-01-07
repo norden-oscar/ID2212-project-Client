@@ -22,8 +22,9 @@ import java.net.URL;
 
 public class LoginActivity extends AppCompatActivity {
 
-    String URLlogin = "http://10.0.2.2:8080/ID2212-project-Server/login";
-    String URLregister = "http://10.0.2.2:8080/ID2212-project-Server/register";
+    String ipaddr;
+    String URLlogin;
+    String URLregister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +32,12 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         TextView errorMsg = (TextView) findViewById(R.id.textMsg);
         errorMsg.setVisibility(View.INVISIBLE);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            ipaddr = extras.getString("IP_ADRESS");
+        }
+        URLlogin = "http://" + ipaddr + ":8080/ID2212-project-Server/login";
+        URLregister = "http://" + ipaddr + ":8080/ID2212-project-Server/register";
 
     }
 
@@ -75,12 +82,14 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private class HttpTask extends AsyncTask<String, Void, String> {
+    private class HttpTask extends AsyncTask<String, Void, String[]> {
         @Override
-        protected String doInBackground(String... urls) {
+        protected String[] doInBackground(String... urls) {
 
             String finishedURL = urls[0] + "?userName=" + urls[1] + "&passWord=" + urls[2];
-            String response;
+            String[] response = new String[3];
+            response[1] = urls[1];
+            response[2] = urls[2];
 
             try {
                 URL httpURL = new URL(finishedURL);
@@ -91,37 +100,56 @@ public class LoginActivity extends AppCompatActivity {
                 while ((line = in.readLine()) != null) {
                     total.append(line);
                 }
-                response = total.toString();
+                response[0] = total.toString();
                 urlConnection.disconnect();
 
             }
             catch (MalformedURLException e) {
                 e.printStackTrace();
-                return "URL error!";
+                response[0] = "URL error!";
             } catch (IOException e){
                 e.printStackTrace();
-                return "Connection error!";
+                response[0] = "Connection error!";
             }
 
             return response;
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String... result) {
 
-            if (result.equals("OK")){
+            if (result[0].equals("OK")){
                 Intent lobbyIntent = new Intent(getApplicationContext(), LobbyActivity.class);
+                lobbyIntent.putExtra("IP_ADRESS",ipaddr);
+                lobbyIntent.putExtra("USERNAME",result[1]);
+                lobbyIntent.putExtra("PASSWORD",result[2]);
+
                 startActivity(lobbyIntent);
             }
-
+            if (result[0].equals("USER_ALREADY_EXISTS")){
+                TextView errorMsg = (TextView) findViewById(R.id.textMsg);
+                errorMsg.setText("Username is already taken!");
+                errorMsg.setVisibility(View.VISIBLE);
+            }
+            if (result[0].equals("COULD_NOT_REGISTER")){
+                TextView errorMsg = (TextView) findViewById(R.id.textMsg);
+                errorMsg.setText("Database error!");
+                errorMsg.setVisibility(View.VISIBLE);
+            }
+            if (result[0].equals("WRONG_PASSWORD")){
+                TextView errorMsg = (TextView) findViewById(R.id.textMsg);
+                errorMsg.setText("Invalid password!");
+                errorMsg.setVisibility(View.VISIBLE);
+            }
+            if (result[0].equals("NO_SUCH_USER_EXISTS")){
+                TextView errorMsg = (TextView) findViewById(R.id.textMsg);
+                errorMsg.setText("No such user exists!");
+                errorMsg.setVisibility(View.VISIBLE);
+            }
             TextView errorMsg = (TextView) findViewById(R.id.textMsg);
-            errorMsg.setText(result);
+            errorMsg.setText(result[0]);
             errorMsg.setVisibility(View.VISIBLE);
-
-
-
         }
     }
-
 }
 

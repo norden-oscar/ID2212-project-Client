@@ -12,50 +12,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public class GameActivity extends AppCompatActivity {
 
     String ipaddr;
-    String port;
+    int port;
     String username;
     String password;
     int roundCount = 0;
     Boolean myTurn = false;
     Boolean[] buttonIsTaken = new Boolean[9];
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Intent socketServiceIntent = new Intent(this, SocketService.class);
-        bindService(socketServiceIntent, myConnection, Context.BIND_AUTO_CREATE);
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            ipaddr = extras.getString("IP_ADRESS");
-            port = extras.getString("PORT");
-            username = extras.getString("USERNAME");
-            password = extras.getString("PASSWORD");
-        }
-
-        for(Boolean bool : buttonIsTaken) {
-            bool = false;
-        }
-
-        socketService.createSocket(ipaddr, Integer.parseInt(port));
-        TextView console = (TextView) findViewById(R.id.textConsole);
-        console.setText("Please wait for opponent");
-        new HelloTask().execute(username);
-    }
-
     SocketService socketService;
     boolean isBound = false;
 
@@ -73,11 +38,40 @@ public class GameActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_game);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Intent socketServiceIntent = new Intent(this, SocketService.class);
+        bindService(socketServiceIntent, myConnection, Context.BIND_AUTO_CREATE);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            ipaddr = extras.getString("IP_ADRESS");
+            port = extras.getInt("PORT");
+            username = extras.getString("USERNAME");
+            password = extras.getString("PASSWORD");
+        }
+
+        for(Boolean bool : buttonIsTaken) {
+            bool = false;
+        }
+
+
+        TextView console = (TextView) findViewById(R.id.textConsole);
+        console.setText("Please wait for opponent");
+        new HelloTask().execute(username);
+    }
+
     private class HelloTask extends AsyncTask<String, Void, String> {
         @Override
-        protected String doInBackground(String... urls) {
+        protected String doInBackground(String... str) {
 
-            return socketService.sendMessage(urls[0]);
+            System.out.println("Str hello = " + str[0]);
+            while (!isBound){}
+            return socketService.sendMessage(str[0]);
         }
 
         @Override

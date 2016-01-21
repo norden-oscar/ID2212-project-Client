@@ -42,6 +42,7 @@
             android:name=".LobbyActivity"
             android:label="Game Lobby">
         </activity>
+        <service android:name=".SocketService" />
     </application>
 
 </manifest>

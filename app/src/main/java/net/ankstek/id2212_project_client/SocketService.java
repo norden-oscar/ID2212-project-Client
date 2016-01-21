@@ -30,6 +30,8 @@ public class SocketService extends Service {
     }
 
     public void createSocket(String hostname, int port) {
+        System.out.println("IPADRESS" + hostname);
+        System.out.println("-------------------------------------------------------");
 
         new ConnectSocketTask().execute(hostname, port);
     }
@@ -72,16 +74,19 @@ public class SocketService extends Service {
 
         @Override
         protected Void doInBackground(Object... params) {
+            System.out.println("Connecting to Server");
             String hostname = (String) params[0];
             int port = (int) params[1];
             try {
                 server = new Socket(hostname, port);
                 out = new PrintWriter(server.getOutputStream());
                 in = new BufferedReader(new InputStreamReader(server.getInputStream()));
+                System.out.println("Connecting to Server: Connected");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return null;
+            Void aVoid = null;
+            return aVoid;
         }
 
         @Override

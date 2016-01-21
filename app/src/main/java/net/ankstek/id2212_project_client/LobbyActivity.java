@@ -23,8 +23,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LobbyActivity extends AppCompatActivity {
 
@@ -34,35 +32,11 @@ public class LobbyActivity extends AppCompatActivity {
     String URLfindgame;
     String username;
     String password;
+    String URLfetchGames;
+    int port;
 
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lobby);
-        gameListEntryAdapter = new GameListEntryAdapter(this, R.layout.game_list_entry);
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            ipaddr = extras.getString("IP_ADRESS");
-            username = extras.getString("USERNAME");
-            password = extras.getString("PASSWORD");
-        }
-        URLfindgame = "http://" + ipaddr + ":8080/ID2212-project-Server/findgame";
-
-        // Setup the list view
-        gameListView = (ListView) findViewById(R.id.listView);
-        gameListView.setAdapter(gameListEntryAdapter);
-
-        // Populate the list, through the adapter
-        for (final GameListEntry entry : getGameEntries()) {
-            gameListEntryAdapter.add(entry);
-        }
-
-        Intent socketServiceIntent = new Intent(this,SocketService.class);
-        startService(socketServiceIntent);
-        bindService(socketServiceIntent,myConnection, Context.BIND_AUTO_CREATE);
-    }
+    int PORT_MIN = 3000;
+    int PORT_MAX = 3999;
 
     SocketService socketService;
     boolean isBound = false;
@@ -81,18 +55,42 @@ public class LobbyActivity extends AppCompatActivity {
         }
     };
 
-    private List<GameListEntry> getGameEntries() {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_lobby);
+        gameListEntryAdapter = new GameListEntryAdapter(this, R.layout.game_list_entry);
 
-        ArrayList<GameListEntry> gle = new ArrayList<GameListEntry>();
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            ipaddr = extras.getString("IP_ADRESS");
+            username = extras.getString("USERNAME");
+            password = extras.getString("PASSWORD");
+        }
 
-        //TODO: get games from server
+        URLfindgame = "http://" + ipaddr + ":8080/ID2212-project-Server/findgame";
+        URLfetchGames = "http://" + ipaddr + ":8080/ID2212-project-Server/fap";
 
-        gle.add(new GameListEntry("ettan", "tvåan", 1337, "Bisi"));
-        gle.add(new GameListEntry("trean", "fyran", 8008, "Free"));
+        // Setup the list view
+        gameListView = (ListView) findViewById(R.id.listView);
+        gameListView.setAdapter(gameListEntryAdapter);
 
-        //TODO: fetch game list from server
+        // Populate the list, through the adapter
+        getGameEntries();
 
-    return gle;
+        Intent socketServiceIntent = new Intent(this,SocketService.class);
+        startService(socketServiceIntent);
+        bindService(socketServiceIntent, myConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        unbindService(myConnection);
+    }
+
+    private void getGameEntries() {
+        new HttpTask().execute(URLfetchGames);
     }
 
     @Override
@@ -131,7 +129,9 @@ public class LobbyActivity extends AppCompatActivity {
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            new HttpTask().execute(URLfindgame);
+            System.out.println("2===============================");
+            System.out.println(URLfindgame + "?userName=" + username);
+            new HttpTask().execute(URLfindgame + "?userName=" + username);
         } else {
 
             Toast.makeText(LobbyActivity.this, "No network connection available.", Toast.LENGTH_LONG).show();
@@ -143,6 +143,10 @@ public class LobbyActivity extends AppCompatActivity {
         protected String doInBackground(String... urls) {
 
             String finishedURL = urls[0];
+
+            System.out.println("3===============================");
+            System.out.println(finishedURL);
+
             String response;
 
             try {
@@ -166,23 +170,63 @@ public class LobbyActivity extends AppCompatActivity {
                 return "Connection error!";
             }
 
+            if(response == null){
+                response = "ERROR";
+            }
+            if(response.equals("")){
+                response = "EMPTY_LIST";
+            }
+
             return response;
         }
 
         @Override
         protected void onPostExecute(String result) {
 
-            if (result.contains("OK")){
+            try {
+                port = Integer.parseInt(result.trim());
+                System.out.println("Game port = " + port);
 
-                String port = result.substring(2);
+                if (port >= PORT_MIN && port <= PORT_MAX) {
+                    while (!isBound){
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    socketService.createSocket(ipaddr, port);
+                    Intent gameIntent = new Intent(getApplicationContext(), GameActivity.class);
+                    gameIntent.putExtra("IP_ADRESS", ipaddr);
+                    gameIntent.putExtra("PORT", port);
+                    gameIntent.putExtra("USERNAME", username);
+                    gameIntent.putExtra("PASSWORD", password);
+                    startActivity(gameIntent);
+                }
+            }
+            catch (NumberFormatException e){
+                System.out.println("Wasn't a port lol");
+            }
+            if (result.contains("ERROR")){
+                gameListEntryAdapter.add(new GameListEntry("SUM TING WONG", "HO LEE FUK", 0000, "RIP"));
+            }
+            else if (result.contains("EMPTY_LIST")){
+                gameListEntryAdapter.add(new GameListEntry("No games found", "", 404, ""));
+            }
+            else {
+                String[] matches = result.trim().split(" ");
 
-                Intent gameIntent = new Intent(getApplicationContext(), GameActivity.class);
-                gameIntent.putExtra("IP_ADRESS",ipaddr);
-                gameIntent.putExtra("PORT",port);
-                gameIntent.putExtra("USERNAME",username);
-                gameIntent.putExtra("PASSWORD",password);
-                startActivity(gameIntent);
+                if(!(matches.length < 4)) {
+                    gameListEntryAdapter.clear();
 
+                    for (int i = 0; i < matches.length; i = i + 4) {
+                        gameListEntryAdapter.add(new GameListEntry(matches[i], matches[i + 1], Integer.parseInt(matches[i + 2]), matches[i + 3]));
+                    }
+                }
+                else {
+                    gameListEntryAdapter.clear();
+                    gameListEntryAdapter.add(new GameListEntry("No games found", "", 404, ""));
+                }
             }
         }
     }

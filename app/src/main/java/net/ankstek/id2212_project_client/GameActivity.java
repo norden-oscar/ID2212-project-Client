@@ -70,7 +70,16 @@ public class GameActivity extends AppCompatActivity {
         protected String doInBackground(String... str) {
 
             System.out.println("Str hello = " + str[0]);
-            while (!isBound){}
+            while (!isBound){
+                System.out.println("Waiting for socket to bind...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            System.out.println("Sending hello!");
             return socketService.sendMessage(str[0]);
         }
 
@@ -79,6 +88,8 @@ public class GameActivity extends AppCompatActivity {
 
             TextView console = (TextView) findViewById(R.id.textConsole);
             TextView round = (TextView) findViewById(R.id.textRoundNumber);
+
+            System.out.println("Parsing result: " + result);
 
             if(result.equals("WAIT")){
                 console.setText("Opponents turn!");

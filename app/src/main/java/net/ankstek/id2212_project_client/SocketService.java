@@ -50,11 +50,14 @@ public class SocketService extends Service {
 
     public String sendMessage(String message) {
 
+        System.out.println("Socket: sending message!");
         out.println(message);
         out.flush();
+        System.out.println("Socket: message sent!");
         String line = null;
         while (line == null) {
             try {
+                System.out.println("Socket: reading message!");
                 line = in.readLine();
             } catch (IOException e) {
                 e.printStackTrace();

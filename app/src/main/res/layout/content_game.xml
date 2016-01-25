@@ -19,15 +19,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="[enemy rank]"
-        android:id="@+id/textEnemyRank"
-        android:layout_below="@+id/textEnemyName"
-        android:layout_alignParentStart="true" />
-
     <GridLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,7 +29,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="0"
             android:id="@+id/btnGame0"
             android:layout_below="@+id/textTurn"
             android:layout_alignEnd="@+id/textEnemyRank"
@@ -49,7 +39,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="1"
             android:id="@+id/btnGame1"
             android:layout_alignTop="@+id/btnGame0"
             android:layout_alignEnd="@+id/textTurn"
@@ -60,7 +49,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="2"
             android:id="@+id/btnGame2"
             android:layout_alignTop="@+id/btnGame1"
             android:layout_alignParentEnd="true"
@@ -71,7 +59,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="3"
             android:id="@+id/btnGame3"
             android:layout_alignTop="@+id/btnGame4"
             android:layout_alignParentStart="true"
@@ -82,7 +69,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="4"
             android:id="@+id/btnGame4"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
@@ -93,7 +79,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="5"
             android:id="@+id/btnGame5"
             android:layout_alignTop="@+id/btnGame4"
             android:layout_alignParentEnd="true"
@@ -104,7 +89,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="6"
             android:id="@+id/btnGame6"
             android:layout_below="@+id/btnGame3"
             android:layout_alignParentStart="true"
@@ -116,7 +100,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="7"
             android:id="@+id/btnGame7"
             android:layout_alignTop="@+id/btnGame6"
             android:layout_centerHorizontal="true"
@@ -127,7 +110,6 @@
         <Button
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:text="8"
             android:id="@+id/btnGame8"
             android:layout_alignTop="@+id/btnGame7"
             android:layout_alignEnd="@+id/btnGame5"
@@ -171,11 +153,11 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Welcome!"
         android:id="@+id/textConsole"
-        android:layout_below="@+id/textEnemyRank"
-        android:layout_marginTop="42dp"
+        android:layout_marginTop="25dp"
         android:layout_alignEnd="@+id/gridLayout"
         android:layout_alignStart="@+id/gridLayout"
-        android:layout_above="@+id/gridLayout" />
+        android:layout_above="@+id/gridLayout"
+        android:layout_below="@+id/textEnemyName" />
 
     <Button
         android:layout_width="wrap_content"
@@ -183,6 +165,7 @@
         android:text="Forfeit"
         android:id="@+id/btnForfeit"
         android:layout_alignTop="@+id/textEnemyName"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:onClick="onClickChooseTile" />
 
 </RelativeLayout>

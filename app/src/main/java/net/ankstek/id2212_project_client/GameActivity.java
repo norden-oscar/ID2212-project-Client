@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class GameActivity extends AppCompatActivity {
@@ -23,6 +24,7 @@ public class GameActivity extends AppCompatActivity {
     Boolean[] buttonIsTaken = new Boolean[9];
     SocketService socketService;
     boolean isBound = false;
+    int[] buttonList = new int[9];
 
     private ServiceConnection myConnection = new ServiceConnection() {
 
@@ -47,6 +49,16 @@ public class GameActivity extends AppCompatActivity {
         Intent socketServiceIntent = new Intent(this, SocketService.class);
         bindService(socketServiceIntent, myConnection, Context.BIND_AUTO_CREATE);
 
+        buttonList[0] = R.id.btnGame0;
+        buttonList[1] = R.id.btnGame1;
+        buttonList[2] = R.id.btnGame2;
+        buttonList[3] = R.id.btnGame3;
+        buttonList[4] = R.id.btnGame4;
+        buttonList[5] = R.id.btnGame5;
+        buttonList[6] = R.id.btnGame6;
+        buttonList[7] = R.id.btnGame7;
+        buttonList[8] = R.id.btnGame8;
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             ipaddr = extras.getString("IP_ADRESS");
@@ -55,13 +67,15 @@ public class GameActivity extends AppCompatActivity {
             password = extras.getString("PASSWORD");
         }
 
-        for(Boolean bool : buttonIsTaken) {
-            bool = false;
+        for(int i = 0; i < buttonIsTaken.length; i++) {
+            buttonIsTaken[i] = false;
         }
-
 
         TextView console = (TextView) findViewById(R.id.textConsole);
         console.setText("Please wait for opponent");
+        TextView round = (TextView) findViewById(R.id.textRoundNumber);
+        round.setText("" + 1);
+
         new HelloTask().execute(username);
     }
 
@@ -87,18 +101,17 @@ public class GameActivity extends AppCompatActivity {
         protected void onPostExecute (String result) {
 
             TextView console = (TextView) findViewById(R.id.textConsole);
-            TextView round = (TextView) findViewById(R.id.textRoundNumber);
+            TextView opponent = (TextView) findViewById(R.id.textEnemyName);
 
             System.out.println("Parsing result: " + result);
 
             if(result.equals("WAIT")){
-                console.setText("Opponents turn!");
-                round.setText("" + (roundCount + 1));
+                console.setText("Waiting...");
+                new WaitTask().execute();
             }
-            if(result.equals("BEGIN")) {
-                console.setText("Your turn!");
-                round.setText("" + (roundCount + 1));
-                myTurn = true;
+            else {
+                opponent.setText(result);
+                new WaitTask().execute();
             }
         }
     }
@@ -114,13 +127,89 @@ public class GameActivity extends AppCompatActivity {
         protected void onPostExecute (String result) {
 
             TextView console = (TextView) findViewById(R.id.textConsole);
+            TextView round = (TextView) findViewById(R.id.textRoundNumber);
+            TextView opponent = (TextView) findViewById(R.id.textEnemyName);
 
             if(result.equals("WAIT")){
-                console.setText("Opponents turn!");
+                console.setText("Waiting...");
+                myTurn = false;
+                new WaitTask().execute();
             }
-            if(result.equals("BEGIN")) {
-                console.setText("Your turn!");
+            else if (result.equals("BEGIN")) {
+                console.setText("Play!");
                 myTurn = true;
+            }
+            else if (result.equals("DRAW")) {
+                console.setText("Draw!");
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = false;
+                }
+                new WaitTask().execute();
+            }
+            else if(result.substring(0,1).equals("X") || result.substring(0,1).equals("O")){
+                String[] msg = result.trim().split("\\|");
+
+                for (String str : msg){
+                    System.out.println("message: " + str);
+                }
+
+                Button btn = (Button) findViewById(buttonList[ Integer.parseInt(msg[1]) ]);
+                btn.setText(result.substring(0,1));
+                buttonIsTaken[Integer.parseInt(msg[1])] = true;
+                myTurn = true;
+            }
+            else if(result.equals("WON ROUND")){
+                console.setText("You won the round!");
+                round.setText("" + (roundCount + 1));
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = false;
+                }
+                new WaitTask().execute();
+            }
+            else if(result.equals("LOST ROUND")){
+                console.setText("You lost the round!");
+                round.setText("" + (roundCount + 1));
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = false;
+                }
+                new WaitTask().execute();
+            }
+            else if(result.equals("WON GAME")){
+                console.setText("Hey you're pretty good at this, you won!");
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = true;
+                }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Intent lobbyIntent = new Intent(getApplicationContext(), LobbyActivity.class);
+                lobbyIntent.putExtra("IP_ADRESS",ipaddr);
+                lobbyIntent.putExtra("USERNAME",username);
+                lobbyIntent.putExtra("PASSWORD", password);
+                startActivity(lobbyIntent);
+            }
+            else if(result.equals("LOST GAME")){
+                console.setText("You lost the game? Wow, you're bad.");
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = true;
+                }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Intent lobbyIntent = new Intent(getApplicationContext(), LobbyActivity.class);
+                lobbyIntent.putExtra("IP_ADRESS",ipaddr);
+                lobbyIntent.putExtra("USERNAME", username);
+                lobbyIntent.putExtra("PASSWORD",password);
+                startActivity(lobbyIntent);
+
+            }
+            else {
+                opponent.setText(result);
+                new WaitTask().execute();
             }
         }
     }
@@ -139,32 +228,41 @@ public class GameActivity extends AppCompatActivity {
             TextView round = (TextView) findViewById(R.id.textRoundNumber);
 
             if(result.equals("WAIT")){
-                console.setText("Opponents turn!");
+                console.setText("Waiting...");
+                myTurn = false;
+                new WaitTask().execute();
             }
-            if(result.equals("BEGIN")) {
-                console.setText("Your turn!");
+            else if(result.equals("BEGIN")) {
+                console.setText("Play!");
                 myTurn = true;
             }
-            if(result.equals("WON ROUND")){
+            else if (result.equals("DRAW")) {
+                console.setText("Draw!");
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = false;
+                }
+                new WaitTask().execute();
+            }
+            else if(result.equals("WON ROUND")){
                 console.setText("You won the round!");
                 round.setText("" + (roundCount + 1));
-                for(Boolean bool : buttonIsTaken){
-                    bool = false;
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = false;
                 }
                 new WaitTask().execute();
             }
-            if(result.equals("LOST ROUND")){
+            else if(result.equals("LOST ROUND")){
                 console.setText("You lost the round!");
                 round.setText("" + (roundCount + 1));
-                for(Boolean bool : buttonIsTaken){
-                    bool = false;
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = false;
                 }
                 new WaitTask().execute();
             }
-            if(result.equals("WON GAME")){
+            else if(result.equals("WON GAME")){
                 console.setText("Hey you're pretty good at this, you won!");
-                for(Boolean bool : buttonIsTaken){
-                    bool = true;
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = true;
                 }
                 try {
                     Thread.sleep(5000);
@@ -177,10 +275,10 @@ public class GameActivity extends AppCompatActivity {
                 lobbyIntent.putExtra("PASSWORD",password);
                 startActivity(lobbyIntent);
             }
-            if(result.equals("LOST GAME")){
+            else if(result.equals("LOST GAME")){
                 console.setText("You lost the game? Wow, you're bad.");
-                for(Boolean bool : buttonIsTaken){
-                    bool = true;
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = true;
                 }
                 try {
                     Thread.sleep(5000);
@@ -192,7 +290,13 @@ public class GameActivity extends AppCompatActivity {
                 lobbyIntent.putExtra("USERNAME",username);
                 lobbyIntent.putExtra("PASSWORD",password);
                 startActivity(lobbyIntent);
-
+            }
+            else if (result.equals("DRAW")) {
+                console.setText("Draw!");
+                for(int i = 0; i < buttonIsTaken.length; i++) {
+                    buttonIsTaken[i] = false;
+                }
+                new WaitTask().execute();
             }
         }
     }
@@ -245,6 +349,11 @@ public class GameActivity extends AppCompatActivity {
                 case R.id.btnGame8:
                     if(!buttonIsTaken[8]){
                         new PlayTask().execute("" + 8);
+                    }
+                    break;
+                case R.id.btnForfeit:
+                    if(!buttonIsTaken[0]){
+                        new PlayTask().execute("forfeit");
                     }
                     break;
             }

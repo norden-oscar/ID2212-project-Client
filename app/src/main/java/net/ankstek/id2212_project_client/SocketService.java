@@ -48,22 +48,31 @@ public class SocketService extends Service {
         return line;
     }
 
+    public String readMessage(){
+
+        String line = null;
+        while (line == null) {
+            try {
+                System.out.println("Socket: reading message!");
+                line = in.readLine();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Socket: message received!");
+
+        return line;
+    }
+
     public String sendMessage(String message) {
 
         System.out.println("Socket: sending message!");
         out.println(message);
         out.flush();
         System.out.println("Socket: message sent!");
-        String line = null;
-        while (line == null) {
-            try {
-                System.out.println("Socket: reading message!");
-                line = in.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return line;
+
+        return readMessage();
     }
 
     public class MyLocalBinder extends Binder {
